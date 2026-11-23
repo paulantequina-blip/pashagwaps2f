@@ -1,0 +1,235 @@
+erDiagram
+    account_types {
+        INTEGER account_type_id PK
+        TEXT type_name
+        INTEGER can_loan
+        INTEGER can_save
+        INTEGER can_money_back
+        INTEGER max_members
+    }
+    account_statuses {
+        INTEGER status_id PK
+        TEXT status_name
+        TEXT description
+    }
+    users {
+        INTEGER user_id PK
+        TEXT username
+        TEXT password_hash
+        TEXT email
+        INTEGER account_type_id FK
+        INTEGER status_id FK
+        INTEGER is_verified
+        TEXT disabled_reason
+        TEXT created_at
+        TEXT updated_at
+    }
+    user_profiles {
+        INTEGER profile_id PK
+        INTEGER user_id FK
+        TEXT first_name
+        TEXT middle_name
+        TEXT last_name
+        TEXT address
+        TEXT gender
+        TEXT birthday
+        TEXT contact_number
+        TEXT tin_number
+    }
+    user_banks {
+        INTEGER bank_id PK
+        INTEGER user_id FK
+        TEXT bank_name
+        TEXT bank_account_number
+        TEXT card_holder_name
+    }
+    user_employment {
+        INTEGER employment_id PK
+        INTEGER user_id FK
+        TEXT company_name
+        TEXT company_address
+        TEXT company_phone
+        TEXT hr_contact_number
+        TEXT position
+        REAL monthly_earnings
+    }
+    administrators {
+        INTEGER admin_id PK
+        TEXT username
+        TEXT password_hash
+        TEXT full_name
+        TEXT email
+        TEXT role
+        INTEGER is_active
+        TEXT created_at
+    }
+    blocked_emails {
+        INTEGER blocked_id PK
+        TEXT email
+        TEXT reason
+        INTEGER blocked_by_admin FK
+        TEXT blocked_at
+    }
+    registration_applications {
+        INTEGER application_id PK
+        INTEGER user_id FK
+        INTEGER requested_type_id FK
+        TEXT status
+        TEXT submitted_at
+        INTEGER reviewed_by FK
+        TEXT reviewed_at
+        INTEGER tin_verified
+        INTEGER company_verified
+        TEXT rejection_reason
+        TEXT delete_after
+    }
+    submitted_documents {
+        INTEGER document_id PK
+        INTEGER application_id FK
+        TEXT document_type
+        TEXT file_path
+        TEXT uploaded_at
+        INTEGER is_legit
+        INTEGER verified_by FK
+        TEXT verified_at
+    }
+    loan_applications {
+        INTEGER loan_id PK
+        INTEGER user_id FK
+        REAL principal_amount
+        INTEGER term_months
+        REAL interest_rate
+        REAL interest_amount
+        REAL received_amount
+        REAL monthly_amount
+        TEXT status
+        TEXT applied_at
+        INTEGER reviewed_by FK
+        TEXT reviewed_at
+        TEXT released_at
+        TEXT rejection_reason
+    }
+    loan_transactions {
+        INTEGER txn_no PK
+        TEXT txn_id
+        INTEGER loan_id FK
+        INTEGER user_id FK
+        TEXT txn_type
+        REAL amount
+        INTEGER term_months
+        TEXT status
+        TEXT remarks
+        INTEGER processed_by FK
+        TEXT created_at
+    }
+    payment_schedules {
+        INTEGER schedule_id PK
+        INTEGER loan_id FK
+        INTEGER installment_no
+        TEXT due_date
+        REAL amount_due
+        TEXT status
+    }
+    billing_statements {
+        INTEGER billing_id PK
+        INTEGER schedule_id FK
+        TEXT date_generated
+        TEXT due_date
+        REAL amount_due
+        REAL interest_amount
+        REAL penalty_amount
+        REAL total_amount
+        TEXT status
+        TEXT paid_at
+    }
+    loan_payments {
+        INTEGER payment_id PK
+        INTEGER billing_id FK
+        REAL amount_paid
+        TEXT payment_date
+        TEXT payment_method
+        TEXT reference_no
+    }
+    savings_accounts {
+        INTEGER savings_id PK
+        INTEGER user_id FK
+        REAL balance
+        TEXT opened_at
+        TEXT zero_balance_since
+    }
+    savings_transactions {
+        INTEGER txn_no PK
+        TEXT txn_id
+        INTEGER savings_id FK
+        TEXT category
+        TEXT source
+        REAL amount
+        TEXT status
+        TEXT created_at
+        TEXT processed_at
+    }
+    withdrawal_requests {
+        INTEGER request_id PK
+        INTEGER txn_no FK
+        TEXT reason
+        TEXT request_status
+        TEXT requested_at
+        INTEGER reviewed_by FK
+        TEXT reviewed_at
+        TEXT admin_note
+    }
+    money_back_earnings {
+        INTEGER earning_id PK
+        INTEGER income_year
+        REAL total_company_income
+        REAL share_rate
+        INTEGER premium_member_count
+        REAL share_per_member
+        INTEGER computed_by FK
+        TEXT computed_at
+    }
+    money_back_allocations {
+        INTEGER allocation_id PK
+        INTEGER earning_id FK
+        INTEGER user_id FK
+        INTEGER savings_txn_no FK
+        REAL amount
+        TEXT allocated_at
+    }
+    admin_activity_logs {
+        INTEGER log_id PK
+        INTEGER admin_id FK
+        TEXT action_type
+        TEXT target_table
+        INTEGER target_id
+        TEXT description
+        TEXT created_at
+    }
+    account_statuses ||--o{ users : "status_id"
+    account_types ||--o{ users : "account_type_id"
+    users ||--o| user_profiles : "user_id"
+    users ||--o| user_banks : "user_id"
+    users ||--o| user_employment : "user_id"
+    administrators ||--o{ blocked_emails : "blocked_by_admin"
+    administrators |o--o{ registration_applications : "reviewed_by"
+    account_types ||--o{ registration_applications : "requested_type_id"
+    users ||--o| registration_applications : "user_id"
+    administrators |o--o{ submitted_documents : "verified_by"
+    registration_applications ||--o{ submitted_documents : "application_id"
+    administrators |o--o{ loan_applications : "reviewed_by"
+    users ||--o{ loan_applications : "user_id"
+    administrators |o--o{ loan_transactions : "processed_by"
+    users ||--o{ loan_transactions : "user_id"
+    loan_applications ||--o{ loan_transactions : "loan_id"
+    loan_applications ||--o{ payment_schedules : "loan_id"
+    payment_schedules ||--o| billing_statements : "schedule_id"
+    billing_statements ||--o{ loan_payments : "billing_id"
+    users ||--o| savings_accounts : "user_id"
+    savings_accounts ||--o{ savings_transactions : "savings_id"
+    administrators |o--o{ withdrawal_requests : "reviewed_by"
+    savings_transactions ||--o| withdrawal_requests : "txn_no"
+    administrators ||--o{ money_back_earnings : "computed_by"
+    savings_transactions |o--o| money_back_allocations : "savings_txn_no"
+    users ||--o{ money_back_allocations : "user_id"
+    money_back_earnings ||--o{ money_back_allocations : "earning_id"
+    administrators ||--o{ admin_activity_logs : "admin_id"
